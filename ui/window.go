@@ -31,6 +31,25 @@ type Visualizer struct {
 	center image.Point
 }
 
+type BgRect struct {
+	X1 float32
+	Y1 float32
+	X2 float32
+	Y2 float32
+}
+
+type Figure struct {
+	X1 float32
+	Y1 float32
+}
+
+type Move struct {
+	X1 float32
+	Y1 float32
+}
+
+type Reset struct{}
+
 func (pw *Visualizer) Main() {
 	pw.tx = make(chan screen.Texture)
 	pw.done = make(chan struct{})
