@@ -1,7 +1,6 @@
 package ui
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 	"log"
@@ -114,7 +113,6 @@ func (pw *Visualizer) handleEvent(e any, t screen.Texture) {
 	case size.Event: // Оновлення даних про розмір вікна.
 		pw.sz = e
 		pw.center = image.Pt(pw.sz.WidthPx/2, pw.sz.HeightPx/2)
-		fmt.Println("resized to", pw.sz.HeightPx, "and", pw.sz.WidthPx)
 
 	case error:
 		log.Printf("ERROR: %s", e)
@@ -123,8 +121,8 @@ func (pw *Visualizer) handleEvent(e any, t screen.Texture) {
 		if t == nil {
 			if e.Button == 1 && e.Direction == 1 {
 				pw.center.Y, pw.center.X = int(e.Y), int(e.X)
+				pw.w.Send(paint.Event{})
 			}
-			pw.w.Send(paint.Event{})
 		}
 
 	case paint.Event:
