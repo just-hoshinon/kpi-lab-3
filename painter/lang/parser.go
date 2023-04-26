@@ -27,9 +27,7 @@ func (p *Parser) Parse(in io.Reader) ([]painter.Operation, error) {
 			return res, err
 		}
 
-		if op != nil { // TODO: remove condition in future
-			res = append(res, op)
-		}
+		res = append(res, op)
 	}
 
 	return res, nil
@@ -38,7 +36,7 @@ func (p *Parser) Parse(in io.Reader) ([]painter.Operation, error) {
 func parseCommand(commandLine string) (painter.Operation, error) {
 	parsedCommand := strings.Fields(commandLine)
 	commandName := parsedCommand[0]
-	params := parsedCommand[1:]
+	commandParams := parsedCommand[1:]
 
 	switch commandName {
 	case "white":
@@ -48,25 +46,30 @@ func parseCommand(commandLine string) (painter.Operation, error) {
 	case "update":
 		return painter.UpdateOp, nil
 	case "bgrect":
-		parsedParams, err := parseParams(params, 4)
+		params, err := parseParams(commandParams, 4)
 		if err != nil {
 			return nil, err
 		}
-		return nil, nil // TODO: create struct
+		return painter.BgRect{
+			X1: params[0],
+			Y1: params[1],
+			X2: params[2],
+			Y2: params[3],
+		}, nil
 	case "figure":
-		parsedParams, err := parseParams(params, 2)
+		params, err := parseParams(commandParams, 2)
 		if err != nil {
 			return nil, err
 		}
-		return nil, nil // TODO: create struct
+		return painter.Figure{X: params[0], Y: params[1]}, nil
 	case "move":
-		parsedParams, err := parseParams(params, 2)
+		params, err := parseParams(commandParams, 2)
 		if err != nil {
 			return nil, err
 		}
-		return nil, nil // TODO: create struct
+		return painter.Move{X: params[0], Y: params[1]}, nil
 	case "reset":
-		return nil, nil // TODO: add action
+		return painter.ResetOp, nil
 	default:
 		return nil, errors.New("unknown command")
 	}
