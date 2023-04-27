@@ -138,6 +138,10 @@ func (pw *Visualizer) handleEvent(e any, t screen.Texture) {
 }
 
 func (pw *Visualizer) drawT() {
+	DrawT(pw.w, pw.center)
+}
+
+func DrawT(up screen.Uploader, p image.Point) {
 	scale := 1
 	colorT := color.RGBA{
 		R: 255,
@@ -146,14 +150,14 @@ func (pw *Visualizer) drawT() {
 		A: 0,
 	}
 
-	pw.w.Fill(
-		image.Rect(pw.center.X-225*scale, pw.center.Y-175*scale, pw.center.X+225*scale, pw.center.Y),
+	up.Fill(
+		image.Rect(p.X-225*scale, p.Y-175*scale, p.X+225*scale, p.Y),
 		colorT,
 		draw.Src,
 	)
 
-	pw.w.Fill(
-		image.Rect(pw.center.X-75*scale, pw.center.Y-175*scale, pw.center.X+75*scale, pw.center.Y+250*scale),
+	up.Fill(
+		image.Rect(p.X-75*scale, p.Y-175*scale, p.X+75*scale, p.Y+250*scale),
 		colorT,
 		draw.Src,
 	)

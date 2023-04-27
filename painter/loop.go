@@ -15,10 +15,11 @@ type Receiver interface {
 type Loop struct {
 	Receiver Receiver
 
-	next screen.Texture // текстура, яка зараз формується
-	prev screen.Texture // текстура, яка була відправленя останнього разу у Receiver
+	next screen.Texture // Текстура, яка зараз формується
+	prev screen.Texture // Текстура, яка була відправлена останнього разу у Receiver
 
-	mq messageQueue
+	mq    MessageQueue
+	state TextureState
 }
 
 var size = image.Pt(400, 400)
@@ -27,18 +28,34 @@ var size = image.Pt(400, 400)
 func (l *Loop) Start(s screen.Screen) {
 	l.next, _ = s.NewTexture(size)
 	l.prev, _ = s.NewTexture(size)
+	l.mq = MessageQueue{queue: make(chan Operation, 15)}
+	l.state = TextureState{}
 
-	// TODO: ініціалізувати чергу подій.
-	// TODO: запустити рутину обробки повідомлень у черзі подій.
+	go func() {
+		for {
+			e := l.mq.Pull()
+
+			switch e.(type) {
+			case Figure, BgRect, Move, Fill, Reset:
+				e.Update(l.state)
+			case Update:
+				t, _ := s.NewTexture(size)
+				l.state.backgroundColor.Do(t)
+				l.state.backgroundRect.Do(t)
+				for _, fig := range l.state.figureCenters {
+					fig.Do(t)
+				}
+				l.Receiver.Update(t)
+			}
+		}
+	}()
 }
 
 // Post додає нову операцію у внутрішню чергу.
-func (l *Loop) Post(op Operation) {
-	// TODO: реалізувати додавання операції в чергу. Поточна імплементація
-	update := op.Do(l.next)
-	if update {
-		l.Receiver.Update(l.next)
-		l.next, l.prev = l.prev, l.next
+func (l *Loop) Post(ol OperationList) {
+
+	for _, op := range ol {
+		l.mq.Push(op)
 	}
 }
 
@@ -47,10 +64,15 @@ func (l *Loop) StopAndWait() {
 
 }
 
-// TODO: реалізувати власну чергу повідомлень.
-type messageQueue struct {
+// MessageQueue черга повідомлень
+type MessageQueue struct {
+	queue chan Operation
 }
 
-func (mq *messageQueue) push(op Operation) {}
+func (mq *MessageQueue) Push(op Operation) {
+	mq.queue <- op
+}
 
-func (mq *messageQueue) pull() Operation { return nil }
+func (mq *MessageQueue) Pull() Operation {
+	return <-mq.queue
+}

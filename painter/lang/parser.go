@@ -3,6 +3,7 @@ package lang
 import (
 	"bufio"
 	"errors"
+	"image/color"
 	"io"
 	"strconv"
 	"strings"
@@ -40,9 +41,9 @@ func parseCommand(commandLine string) (painter.Operation, error) {
 
 	switch commandName {
 	case "white":
-		return painter.OperationFunc(painter.WhiteFill), nil
+		return painter.Fill{Color: color.White}, nil
 	case "green":
-		return painter.OperationFunc(painter.GreenFill), nil
+		return painter.Fill{Color: color.RGBA{G: 0xff, A: 0xff}}, nil
 	case "update":
 		return painter.UpdateOp, nil
 	case "bgrect":
