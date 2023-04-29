@@ -33,8 +33,8 @@ type Visualizer struct {
 func (pw *Visualizer) Main() {
 	pw.tx = make(chan screen.Texture)
 	pw.done = make(chan struct{})
-	pw.center.X = 400
-	pw.center.Y = 400
+	pw.center.X = 300
+	pw.center.Y = 300
 	driver.Main(pw.run)
 }
 
@@ -49,8 +49,8 @@ func (pw *Visualizer) run(s screen.Screen) {
 
 	w, err := s.NewWindow(&screen.NewWindowOptions{
 		Title:  pw.Title,
-		Width:  800,
-		Height: 800,
+		Width:  600,
+		Height: 600,
 	})
 	if err != nil {
 		log.Fatal("Failed to initialize the app window:", err)
@@ -142,7 +142,6 @@ func (pw *Visualizer) drawT() {
 }
 
 func DrawT(up screen.Uploader, p image.Point) {
-	scale := 1
 	colorT := color.RGBA{
 		R: 255,
 		G: 255,
@@ -151,13 +150,13 @@ func DrawT(up screen.Uploader, p image.Point) {
 	}
 
 	up.Fill(
-		image.Rect(p.X-225*scale, p.Y-175*scale, p.X+225*scale, p.Y),
+		image.Rect(p.X-225, p.Y-175, p.X+225, p.Y),
 		colorT,
 		draw.Src,
 	)
 
 	up.Fill(
-		image.Rect(p.X-75*scale, p.Y-175*scale, p.X+75*scale, p.Y+250*scale),
+		image.Rect(p.X-75, p.Y-175, p.X+75, p.Y+250),
 		colorT,
 		draw.Src,
 	)

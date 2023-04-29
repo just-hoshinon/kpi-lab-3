@@ -2,6 +2,7 @@ package painter
 
 import (
 	"image"
+	"image/color"
 
 	"golang.org/x/exp/shiny/screen"
 )
@@ -22,14 +23,14 @@ type Loop struct {
 	state TextureState
 }
 
-var size = image.Pt(400, 400)
+var size = image.Pt(600, 600)
 
 // Start запускає цикл подій. Цей метод потрібно запустити до того, як викликати на ньому будь-які інші методи.
 func (l *Loop) Start(s screen.Screen) {
 	l.next, _ = s.NewTexture(size)
 	l.prev, _ = s.NewTexture(size)
 	l.mq = MessageQueue{queue: make(chan Operation, 15)}
-	l.state = TextureState{}
+	l.state = TextureState{backgroundColor: Fill{Color: color.White}}
 
 	go func() {
 		for {
@@ -37,11 +38,15 @@ func (l *Loop) Start(s screen.Screen) {
 
 			switch e.(type) {
 			case Figure, BgRect, Move, Fill, Reset:
-				e.Update(l.state)
+				e.Update(&l.state)
 			case Update:
 				t, _ := s.NewTexture(size)
 				l.state.backgroundColor.Do(t)
-				l.state.backgroundRect.Do(t)
+
+				if l.state.backgroundRect != nil {
+					l.state.backgroundRect.Do(t)
+				}
+
 				for _, fig := range l.state.figureCenters {
 					fig.Do(t)
 				}
