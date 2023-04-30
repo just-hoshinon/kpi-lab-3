@@ -1,0 +1,23 @@
+name: Testing and building
+on:
+  pull_request:
+    branches:
+      - '*'
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.18.0'
+      - name: Install dependencies
+        run: go mod tidy
+      - name: Run testing
+        run: go test -race ./...
+      - name: Build painter
+        run: go build -o out/painter cmd/painter/main.go
