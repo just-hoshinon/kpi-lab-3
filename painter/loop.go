@@ -1,7 +1,6 @@
 package painter
 
 import (
-	"fmt"
 	"image"
 	"image/color"
 
@@ -40,8 +39,6 @@ func (l *Loop) Start(s screen.Screen) {
 			switch e.(type) {
 			case Figure, BgRect, Move, Fill, Reset:
 				e.Update(&l.state)
-				fmt.Println(l.Receiver)
-				fmt.Println(l.next)
 			case Update:
 				l.state.backgroundColor.Do(l.next)
 
