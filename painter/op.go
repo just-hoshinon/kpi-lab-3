@@ -28,7 +28,7 @@ var UpdateOp = Update{}
 
 type Update struct{}
 
-func (op Update) Update(state *TextureState) {}
+func (op Update) Update(_ *TextureState) {}
 
 // Fill зафарбовує текстуру у відповідний колір
 type Fill struct {
@@ -40,7 +40,7 @@ func (op Fill) Do(t screen.Texture) {
 }
 
 func (op Fill) Update(state *TextureState) {
-	state.backgroundColor = op
+	state.backgroundColor = &op
 }
 
 type Reset struct{}
@@ -49,7 +49,7 @@ type Reset struct{}
 var ResetOp = Reset{}
 
 func (op Reset) Update(state *TextureState) {
-	state.backgroundColor = Fill{Color: color.Black}
+	state.backgroundColor = &Fill{Color: color.Black}
 	state.backgroundRect = nil
 	state.figureCenters = nil
 }
@@ -76,7 +76,7 @@ func (op BgRect) Do(t screen.Texture) {
 }
 
 func (op BgRect) Update(state *TextureState) {
-	state.backgroundRect = op
+	state.backgroundRect = &op
 }
 
 // Figure операція додає фігуру варіанту на вказані координати

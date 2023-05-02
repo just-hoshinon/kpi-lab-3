@@ -1,7 +1,7 @@
 package painter
 
 type TextureState struct {
-	backgroundColor TextureOperation
-	backgroundRect  TextureOperation
+	backgroundColor *Fill
+	backgroundRect  *BgRect
 	figureCenters   []*Figure
 }

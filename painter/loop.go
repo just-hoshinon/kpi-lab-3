@@ -1,6 +1,7 @@
 package painter
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 
@@ -19,8 +20,9 @@ type Loop struct {
 	next screen.Texture // Текстура, яка зараз формується
 	prev screen.Texture // Текстура, яка була відправлена останнього разу у Receiver
 
-	mq    MessageQueue
-	state TextureState
+	mq       MessageQueue
+	state    TextureState
+	doneFunc func()
 }
 
 var size = image.Pt(600, 600)
@@ -28,9 +30,8 @@ var size = image.Pt(600, 600)
 // Start запускає цикл подій. Цей метод потрібно запустити до того, як викликати на ньому будь-які інші методи.
 func (l *Loop) Start(s screen.Screen) {
 	l.next, _ = s.NewTexture(size)
-	l.prev, _ = s.NewTexture(size)
-	l.mq = MessageQueue{queue: make(chan Operation, 15)}
-	l.state = TextureState{backgroundColor: Fill{Color: color.White}}
+	l.mq = MessageQueue{queue: make(chan Operation)}
+	l.state = TextureState{backgroundColor: &Fill{Color: color.White}}
 
 	go func() {
 		for {
@@ -39,18 +40,25 @@ func (l *Loop) Start(s screen.Screen) {
 			switch e.(type) {
 			case Figure, BgRect, Move, Fill, Reset:
 				e.Update(&l.state)
+				fmt.Println(l.Receiver)
+				fmt.Println(l.next)
 			case Update:
-				t, _ := s.NewTexture(size)
-				l.state.backgroundColor.Do(t)
+				l.state.backgroundColor.Do(l.next)
 
 				if l.state.backgroundRect != nil {
-					l.state.backgroundRect.Do(t)
+					l.state.backgroundRect.Do(l.next)
 				}
 
 				for _, fig := range l.state.figureCenters {
-					fig.Do(t)
+					fig.Do(l.next)
 				}
-				l.Receiver.Update(t)
+				l.prev = l.next
+				l.Receiver.Update(l.next)
+				l.next, _ = s.NewTexture(size)
+			}
+
+			if l.doneFunc != nil {
+				l.doneFunc()
 			}
 		}
 	}()
@@ -62,11 +70,6 @@ func (l *Loop) Post(ol OperationList) {
 	for _, op := range ol {
 		l.mq.Push(op)
 	}
-}
-
-// StopAndWait сигналізує
-func (l *Loop) StopAndWait() {
-
 }
 
 // MessageQueue черга повідомлень
