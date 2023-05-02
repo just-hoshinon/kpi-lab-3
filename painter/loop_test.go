@@ -2,8 +2,8 @@ package painter
 
 import (
 	"errors"
-	"golang.org/x/exp/shiny/driver"
 	"golang.org/x/exp/shiny/screen"
+	"golang.org/x/image/draw"
 	"image"
 	"image/color"
 	"testing"
@@ -28,6 +28,18 @@ func (s MockScreen) NewTexture(_ image.Point) (screen.Texture, error) {
 func (s MockScreen) NewWindow(_ *screen.NewWindowOptions) (screen.Window, error) {
 	return nil, errors.New("nothing")
 }
+
+type MockTexture struct{}
+
+func (t MockTexture) Release() {}
+func (t MockTexture) Size() image.Point {
+	return image.Point{}
+}
+func (t MockTexture) Bounds() image.Rectangle {
+	return image.Rectangle{}
+}
+func (t MockTexture) Upload(_ image.Point, _ screen.Buffer, _ image.Rectangle) {}
+func (t MockTexture) Fill(_ image.Rectangle, _ color.Color, _ draw.Op)         {}
 
 type ConChecker struct {
 	length int
@@ -373,14 +385,6 @@ func TestInChaoticOrder(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	var src screen.Screen
-	done := make(chan struct{})
-	go driver.Main(func(s screen.Screen) {
-		src = s
-		done <- struct{}{}
-		select {}
-	})
-	<-done
 
 	ops := OperationList{
 		Figure{
@@ -416,7 +420,8 @@ func TestUpdate(t *testing.T) {
 
 	c := makeChecker(len(ops))
 	loop := Loop{Receiver: rec, doneFunc: c.done}
-	loop.Start(src)
+	loop.Start(MockScreen{})
+	loop.next = MockTexture{}
 	loop.Post(ops)
 	c.check()
 
